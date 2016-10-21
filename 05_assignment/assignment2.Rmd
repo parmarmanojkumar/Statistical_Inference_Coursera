@@ -1,0 +1,278 @@
+---
+title: 'Statistical Inference Project : ToothGrowth Data Analysis'
+author: "Manojkumar Parmar"
+date: "10/20/2016"
+output:
+  pdf_document:
+    number_sections: yes
+    toc: yes
+    toc_depth: 5
+  html_document:
+    number_sections: yes
+    theme: journal
+    toc: yes
+    toc_depth: 5
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(gridExtra)
+library(ggplot2)
+library(pastecs)
+```
+
+## Overview
+In this report investigation on the **ToothGrowth** data set is performed in R and various hypothesis are derived and tested with respect to dosage size and supplement type. 
+
+## Dataset
+
+Data set is available with r package "datasets". Following code loads the data set and provides statistical summary of data set.
+```{r, echo=TRUE, message=FALSE, warning=FALSE}
+library(datasets)
+data("ToothGrowth")
+stat.desc(ToothGrowth)
+```
+
+### Visualization of data
+Plotting the data of data set provides visualization to improve understanding of data. Following code plots the data samples separated by supplement over dose size.
+```{r, echo=TRUE, message=FALSE, warning=FALSE}
+# converting doses to factor for plotting
+ToothGrowth$dose <- factor(ToothGrowth$dose)
+#plotting of raw data
+g0 <- ggplot(ToothGrowth, aes(x = dose, y = len, color = supp, shape = supp)) + 
+        geom_point(alpha=0.7 , size = 3) + theme(legend.position="bottom")  +
+        geom_line(data=aggregate(len~.,data=ToothGrowth,mean),aes(group=supp,colour=supp)) +
+        ggtitle("ToothGrowth Dataset") + 
+        labs(y = "Length of tooth", x = "Dose size")
+g0
+```
+
+Following code provides detailed visualization of key summary statistics of data with box plot.
+```{r, echo=TRUE, fig.height=11, fig.width=11, message=FALSE, warning=FALSE}
+#boxplot of data dose wise
+g1 <- ggplot(ToothGrowth, aes(x = dose, y = len, fill = dose)) + 
+        geom_boxplot(alpha=0.7)+ theme(legend.position="bottom",
+                                       panel.border = element_rect(colour = "black", 
+                                                                   fill=NA, size=5))+
+        ggtitle("Boxplot of tooth growth by dose size") + 
+        labs(y = "Length of tooth", x = "Dose size")
+#boxplot of data supplement wise
+g2 <- ggplot(ToothGrowth, aes(x = supp, y = len, fill = supp)) + 
+        geom_boxplot(alpha=0.7) + theme(legend.position="bottom",
+                                        panel.border = element_rect(colour = "black", 
+                                                                    fill=NA, size=5))+
+        ggtitle("Boxplot of tooth growth by supplement type") + 
+        labs(y = "Length of tooth", x = "Supplement")
+#two box plot of data supplement wise and dose wise
+g3 <- ggplot(ToothGrowth, aes(x = supp, y = len, fill = dose)) + 
+        geom_boxplot(alpha=0.7) + theme(legend.position="bottom",
+                                        panel.border = element_rect(colour = "black", 
+                                                                    fill=NA, size=5))+
+        ggtitle("Boxplot of tooth growth by suppl. type over dose size") + 
+        labs(y = "Length of tooth", x = "Supplement")
+g4 <- ggplot(ToothGrowth, aes(x = dose, y = len, fill = supp)) + 
+        geom_boxplot(alpha=0.7) + theme(legend.position="bottom",
+                                        panel.border = element_rect(colour = "black", 
+                                                                    fill=NA, size=5))+
+        ggtitle("Boxplot of tooth growth by dose size over supp. type") + 
+        labs(y = "Length of tooth", x = "Dose size")
+grid.arrange(g1,g2,g4,g3,ncol=2)
+```
+
+```{r, include=FALSE}
+#Reload the data in original format
+data("ToothGrowth")
+```
+
+
+### Summary of dataset
+In this chapter, detailed summary of data set is presented by various means.
+
+- Sample sizes over various dose sizes and supplement
+```{r, echo=TRUE, message=FALSE, warning=FALSE}
+#sample count dose vise and supplement wise
+with(ToothGrowth,table(supp, dose))
+```
+
+- Mean and standard deviation of samples based on dose size
+```{r, echo=TRUE, message=FALSE, warning=FALSE}
+# mean and sd of samples dose wise
+with(ToothGrowth,tapply(len, dose, mean))
+with(ToothGrowth,tapply(len, dose, sd))
+```
+
+- Mean and standard deviation of samples based on supplement type
+```{r, echo=TRUE, message=FALSE, warning=FALSE}
+# mean and sd of samples supplement wise
+with(ToothGrowth,tapply(len, supp, mean))
+with(ToothGrowth,tapply(len, supp, sd))
+```
+
+- Mean and standard deviation of samples based on dose size and supplement type.
+```{r, echo=TRUE, message=FALSE, warning=FALSE}
+# mean and sd of samples dose wise & supplement wise
+with(ToothGrowth,tapply(len, list(supp,dose), mean))
+with(ToothGrowth,tapply(len, list(supp,dose), sd))
+```
+
+---
+
+## Hypothesis
+
+Based on data visualization and summary of data, there are certain observations to be made.
+
+- Dose increase seems to increase teeth growth ( refer above "Box plot of tooth growth by dose size")
+- OJ supplement seems to have positive impact on teeth growth (refer above "Box plot of tooth growth by supplement type")
+- Dose wise, OJ supplement seems to have positive impact on teeth growth (refer "Box plot of tooth growth by suppl. type over dose size")
+
+However, this observation needs to be validated by statistical tools. Here, hypothesis testing is used with $95$% confidence interval for t distribution.
+In following sections, hypothesis testing is carried out by preparing necessary data set and later subjecting the data set for t-test. At the end, summary of hypothesis testing is provided.
+
+### H1 : Dose increase have positive impact on teeth growth
+
+#### Dataset preparation
+
+Following code, generates dose wise data set independent of supplement type.
+
+```{r, echo=TRUE, message=FALSE, warning=FALSE, results='hide'}
+#Dose wise seperation
+d05 <- subset(ToothGrowth,dose==0.5,select = c(len,dose))
+stat.desc(d05)
+d10 <- subset(ToothGrowth,dose==1.0,select = c(len,dose))
+stat.desc(d10)
+d20 <- subset(ToothGrowth,dose==2.0,select = c(len,dose))
+stat.desc(d20)
+```
+
+#### Hypothesis testing
+
+To prove the hypothesis, 3 tests are carried out over dose size.
+
+```{r, echo=TRUE, message=FALSE, warning=FALSE}
+#1 : Dose increase have impact on teeth growth
+testd10vsd05 = t.test(d10$len,d05$len,paired = F,var.equal = F)
+testd10vsd05
+testd20vsd05 = t.test(d20$len,d05$len,paired = F,var.equal = F)
+testd20vsd05
+testd20vsd10 = t.test(d20$len,d10$len,paired = F,var.equal = F)
+testd20vsd10
+```
+
+- All the confidence interval are above $0$ and p-values are less than $0.05$.
+- Hence test successfully rejected null hypothesis, i.e. dose size have positive impact on teeth growth.
+
+### H2 : OJ supplement have impact on teeth growth compare to VC supplement
+
+#### Dataset preparation
+
+Following code, generates supplement wise data set independent of dose size.
+
+```{r, echo=TRUE, message=FALSE, warning=FALSE, results='hide'}
+#supplement wise seperation
+oj <- subset(ToothGrowth,supp=="OJ",select = c(len,dose))
+stat.desc(oj)
+vc <- subset(ToothGrowth,supp=="VC",select = c(len,dose))
+stat.desc(vc)
+```
+
+#### Hypothesis testing
+
+To prove the hypothesis, one test is carried out over supplement type.
+
+```{r, echo=TRUE, message=FALSE, warning=FALSE}
+#2 : OJ supplement have impact on teeth growth
+testojvsvc = t.test(oj$len,vc$len, paired = F, var.equal = F)
+testojvsvc
+```
+
+- The confidence interval are inclusive of $0$ and p-values is higher than $0.05$.
+- Hence test failed to reject null hypothesis i.e. OJ supplement does not have positive impact on teeth growth in comparison of VC supplement.
+
+### H3 : Dose wise, OJ supplement have impact on teeth growth
+
+#### Dataset preparation
+
+Following code, generates supplement wise and dose size wise data set.
+
+```{r, echo=TRUE, message=FALSE, warning=FALSE, results='hide'}
+#supplement and dosewise seperation
+ojd05 <- oj[oj$dose==0.5,]$len
+stat.desc(ojd05)
+ojd10 <- oj[oj$dose==1.0,]$len
+stat.desc(ojd10)
+ojd20 <- oj[oj$dose==2.0,]$len
+stat.desc(ojd20)
+vcd05 <- vc[vc$dose==0.5,]$len
+stat.desc(vcd05)
+vcd10 <- vc[vc$dose==1.0,]$len
+stat.desc(vcd10)
+vcd20 <- vc[vc$dose==2.0,]$len
+stat.desc(vcd20)
+```
+
+#### Hypothesis testing
+
+To prove the hypothesis, 3 tests are carried out by dose wise over supplement type.
+
+```{r, echo=TRUE, message=FALSE, warning=FALSE}
+# 3 : dose wise, OJ supplement have impact on teeth grwoth
+testojd05vsvcd05 = t.test(ojd05,vcd05,paired = F, var.equal = F)
+testojd10vsvcd10 = t.test(ojd10,vcd10,paired = F, var.equal = F)
+testojd20vsvcd20 = t.test(ojd20,vcd20,paired = F, var.equal = F)
+```
+
+1. Dose of 0.5, OJ supplement verses VC supplement t test result
+
+```{r, echo=FALSE, message=FALSE, warning=FALSE}
+testojd05vsvcd05
+```
+
+- All the confidence interval are above $0$ and p-values are less than $0.05$.
+- Hence test successfully rejected null hypothesis, i.e. OJ supplement does have positive impact on teeth growth in comparison of VC supplement for $0.5$ dose size.
+
+2. Dose of 1.0, OJ supplement verses VC supplement t test result
+
+```{r, echo=FALSE, message=FALSE, warning=FALSE}
+testojd10vsvcd10
+```
+
+- All the confidence interval are above $0$ and p-values are less than $0.05$.
+- Hence test successfully rejected null hypothesis, i.e. OJ supplement does have positive impact on teeth growth in comparison of VC supplement for $1.0$ dose size
+     
+3. Dose of 2.0, OJ supplement verses VC supplement t test result
+
+```{r, echo=FALSE, message=FALSE, warning=FALSE}
+testojd20vsvcd20
+```
+
+- The confidence interval are inclusive of $0$ and p-values is higher than $0.05$.
+- Hence test failed to reject null hypothesis i.e. OJ supplement does not have positive impact on teeth growth in comparison of VC supplement for $2.0$ dose size.
+
+### Summary of Hypothesis Testing
+
+- From H1 : Dose increase **have strong positive impact** on teeth growth.
+     - p-value for $1.0$ over $0.5$ =  $`r testd10vsd05$p.value`$
+     - p-value for $2.0$ over $0.5$ =  $`r testd20vsd05$p.value`$
+     - p-value for $2.0$ over $1.0$ =  $`r testd20vsd10$p.value`$
+     - All p-values are less than $0.05$ & hence strong influence
+
+- From H2 : OJ supplement **does not have stronger impact** on teeth growth as p-value $`r testojvsvc$p.value`$ is which is higher than $0.05$.
+
+- From H3 : Does wise, OJ supplement **have strong impact** on teeth growth for dose size $0.5$ and $1.0$. For dose $2.0$, OJ supplement **does not have impact** on teeth growth.
+     - p-values for $0.5$ dose for OJ over VC = $`r testojd05vsvcd05$p.value`$
+     - p-values for $1.0$ dose for OJ over VC = $`r testojd10vsvcd10$p.value`$
+     - p-values for $2.0$ dose for OJ over VC = $`r testojd20vsvcd20$p.value`$
+     - For dose $0.5$ and $1.0$ p-values are lower than $0.05$ and hence strong positive influence
+     - For dose $3.0$ p-value is much more higher than $0.05$and hence no impact.
+
+## Conclusion
+Increase in dose leads to increase in growth of teeth irrespective of supplement method. OJ supplement method is not really superior over all dose ranges. However, for small dose ranges up to $1.0$, OJ supplement is highly superior over VC supplement. 
+
+## Assumptions
+1. A higher value of “len” indicates a higher impact.
+2. Higher value of “dose” indicates increased dose size.
+3. Data provided is independently distributed and not paired.
+4. Data follows T distribution as the observations are limited.
+5. Data is derived from samples representative of the population. 
+6. Variances are considered to be unequal.
+7. Confidence interval of $95$% is used for hypothesis test.
