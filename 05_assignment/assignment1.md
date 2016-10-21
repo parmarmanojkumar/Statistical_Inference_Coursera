@@ -1,25 +1,8 @@
----
-title: 'Statistical Inference Project : Simulation Excercise'
-author: "Manojkumar Parmar"
-date: "10/20/2016"
-output:
-  html_document:
-    keep_md: yes
-    number_sections: yes
-    theme: journal
-    toc: yes
-  pdf_document:
-    number_sections: yes
-    toc: yes
-    toc_depth: 5
----
+# Statistical Inference Project : Simulation Excercise
+Manojkumar Parmar  
+10/20/2016  
 
-```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
-library(ggplot2)
-library(gridExtra)
-set.seed(123)
-```
+
 
 ## Overview
 
@@ -42,7 +25,8 @@ In investigation report, average of $40$ samples are considered from exponential
 Here is the example of distribution of exponential distribution samples with $\lambda = 0.2$. Additionally, to prove that theoretical mean of distribution $\frac{1}{\lambda}$, simulation is done with law of large numbers.
 
 
-```{r}
+
+```r
 n = 1000
 lambda = 0.2
 #generating exp distribution for 1000 samples
@@ -51,7 +35,8 @@ base_data = rexp(n,lambda)
 means <- cumsum(base_data) / (1  : n)
 ```
 
-```{r, echo=TRUE, message=FALSE, warning=FALSE}
+
+```r
 #code for plotting distribution and law of large number
 p <- qplot(base_data, geom ='histogram',binwidth = 2,
            main = "Sample Distribution",
@@ -67,6 +52,8 @@ g <- ggplot(data.frame(x = 1 : n, y = means), aes(x = x, y = y))+
 grid.arrange(p,g, ncol =2)
 ```
 
+![](assignment1_files/figure-html/unnamed-chunk-2-1.png)<!-- -->
+
 In LLN figure, red dashed line represents the theoretical mean $\frac{1}{\lambda} = \frac{1}{0.2} = 5$. From figure it is clear that exponential distribution mean value approaches theoretical mean as sample size increases.
 
 ---
@@ -75,7 +62,8 @@ In LLN figure, red dashed line represents the theoretical mean $\frac{1}{\lambda
 
 For detailed analysis, $40$ samples are derived from exponential distribution having $\lambda = 0.2$. To avoid anomalies in result, $40$ samples are derived $1000$ times and mean of each $40$ sample is stored for further analysis.
 
-```{r}
+
+```r
 nsim = 1000 #repeatation number of experiment
 
 n = 40 #number of samples
@@ -85,32 +73,53 @@ mnsexp = NULL #mean values from every time 40 samples are drawn
 varexp = NULL #variance value from every time 40 samples are drawn
 thmean = 1/lambda # theoratical mean
 thmean
+```
+
+```
+## [1] 5
+```
+
+```r
 thsd = 1/lambda #theratical standard deviation for large samples
 thssd = thsd/sqrt(n) # theoratical standard deviation for 40 samples
 thsd
+```
+
+```
+## [1] 5
+```
+
+```r
 thvar = 1/lambda^2 #theoratical variance for large
 thsvar = thvar/n #theoratical variance for 40 samples
 thvar
+```
+
+```
+## [1] 25
+```
+
+```r
 #generate mean and variane distributio
 for (i in 1:nsim) {
         samples = rexp(n,lambda)
         mnsexp = c(mnsexp,mean(samples))
         varexp = c(varexp,var(samples))
 }
-
 ```
 
-- Theoretical mean of exponential distribution is $`r thmean`$ derived using  $\frac{1}{\lambda}$.
-- Theoretical standard deviation of exponential distribution is $`r thsd`$ for large samples and $`r thssd`$ with sample size of $40$ derived using $\frac{1/\lambda}{\sqrt[2]{n}}$.
-- Theoretical variance of exponential distribution is $`r thvar`$ for large samples and $`r thsvar`$ with sample size of $40$ derived using $\frac{1/\lambda^2}{n}$.
+- Theoretical mean of exponential distribution is $5$ derived using  $\frac{1}{\lambda}$.
+- Theoretical standard deviation of exponential distribution is $5$ for large samples and $0.7905694$ with sample size of $40$ derived using $\frac{1/\lambda}{\sqrt[2]{n}}$.
+- Theoretical variance of exponential distribution is $25$ for large samples and $0.625$ with sample size of $40$ derived using $\frac{1/\lambda^2}{n}$.
 
 ### Sample Mean versus Theoretical Mean
 
 Following figure represents distribution of obtained mean over $1000$ trials of $40$ samples of exponential distribution. 
 Dashed blue lines represents the obtained mean from samples and dashed red line represents the theoretical mean.
-Blue line envelope represents the obtained distribution while red line represents the normal distribution with mean $`r thmean`$ and standard deviation $`r thsd`$.
+Blue line envelope represents the obtained distribution while red line represents the normal distribution with mean $5$ and standard deviation $5$.
 
-```{r, echo=TRUE, message=FALSE, warning=FALSE}
+
+```r
 #code for plotting mean distribution
 p <- ggplot(data.frame(x = mnsexp),aes(x=x)) + 
         geom_histogram(aes(y = ..density..),binwidth = 0.2,fill=I('#8A8A8A')) + 
@@ -127,6 +136,8 @@ p <- ggplot(data.frame(x = mnsexp),aes(x=x)) +
 p
 ```
 
+![](assignment1_files/figure-html/unnamed-chunk-4-1.png)<!-- -->
+
 From above figure it can be concluded that observed mean follows closely the normal distribution.
 
 ### Sample Variance versus Theoretical Variance
@@ -134,7 +145,8 @@ From above figure it can be concluded that observed mean follows closely the nor
 Following figure represents distribution of obtained variances over $1000$ trials of $40$ samples of exponential distribution. 
 Dashed blue lines represents the obtained mean of variances from samples  and dashed red line represents the theoretical variance.
 
-```{r, echo=TRUE, message=FALSE, warning=FALSE}
+
+```r
 #code for plotting variance distribution
 q <- ggplot(data.frame(x = varexp),aes(x)) + 
         geom_histogram(aes(y = ..density..),binwidth = 2,fill=I('#8A8A8A')) + 
@@ -146,6 +158,8 @@ q <- ggplot(data.frame(x = varexp),aes(x)) +
                    linetype="dashed", size = 1)
 q
 ```
+
+![](assignment1_files/figure-html/unnamed-chunk-5-1.png)<!-- -->
 
 From above figure it can be concluded that observed variances follows normal distribution around theoretical variance.
 
@@ -160,7 +174,8 @@ Note that for standard normal distribution, approximately $68\%$, $95\%$ and $99
 
 Following R function samplecoverage is written to analyse the property of standard normal with respect to coverage of samples corresponding to standard deviation. 
 
-```{r, echo=TRUE, message=FALSE, warning=FALSE}
+
+```r
 # function to calculate sample coverage for given standard distribution
 samplecoverage <- function(sample, nsd){
         #sample - sample of data
@@ -176,12 +191,19 @@ samplecoverage <- function(sample, nsd){
 
 By using above function, following code finds coverage for $1^{st}$, $2^{nd}$ and $3^{rd}$ standard deviation.
 
-```{r, echo=TRUE, message=FALSE, warning=FALSE}
+
+```r
 # code to generate sample coverage for 1,2 and 3 standardd deviations
 for (i in  1:3){
        print(paste0("Coverage for ",i," standard deviation = ", 
                     samplecoverage(mnsexp,i), "%"))
 }
+```
+
+```
+## [1] "Coverage for 1 standard deviation = 69.6%"
+## [1] "Coverage for 2 standard deviation = 95%"
+## [1] "Coverage for 3 standard deviation = 99.6%"
 ```
 
 From analysis of sample coverage, it is clear that generated distribution follows the normal distribution.
@@ -190,13 +212,15 @@ From analysis of sample coverage, it is clear that generated distribution follow
 
 Additionally, quantiles comparison with normal distribution is carried out using following code.
 
-```{r, echo=TRUE, message=FALSE, warning=FALSE}
+
+```r
 qqnorm(mnsexp,main ="Quantile relation Plot", 
        xlab = "Normal Distribution Quantiles",
        ylab = "Exponential sample Quantiles")
 qqline(mnsexp,col = "2")
-
 ```
+
+![](assignment1_files/figure-html/unnamed-chunk-8-1.png)<!-- -->
 
 From analysis of the figure it is evident that distribution is following normal distribution quntiles linearly.
 
