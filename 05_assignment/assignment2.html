@@ -372,8 +372,8 @@ testojvsvc</code></pre>
 </div>
 <div id="additional-hypothesis-testing-using-multiple-test-rule" class="section level4">
 <h4><span class="header-section-number">0.3.2.3</span> Additional Hypothesis Testing using Multiple Test rule</h4>
-<p>In previous testing, we have found that H2 (OJ supplement have impact on teeth growth compare to VC supplement) is failing with very small p-values. To confirm the same, new approch of multiple testing is used here.</p>
-<p>OJ and VC dataset have <span class="math inline">\(30\)</span> samples each. In multiple testing,procedure will choose <span class="math inline">\(21\)</span> samples (<span class="math inline">\(70\)</span>%) randomly and perform the test. Randomized trials are repeated for 20 times. On generated p-values then “BH” correction is applied to determine the hypothesis.</p>
+<p>In previous testing, we have found that H2 (OJ supplement have impact on teeth growth compare to VC supplement) is failing with very small p-values. To confirm the same, new approach of multiple testing is used here.</p>
+<p>OJ and VC data set have <span class="math inline">\(30\)</span> samples each. In multiple testing,procedure will choose <span class="math inline">\(21\)</span> samples (<span class="math inline">\(70\)</span>%) randomly and perform the test. Randomized trials are repeated for 20 times. On generated p-values then “BH” correction is applied to determine the hypothesis.</p>
 <pre class="r"><code>repeatTrial = 20 # No. Of repeated trials
 pVal=NULL # to store p-value of each trial
 ssize = 21 # 70% of 30
@@ -389,8 +389,8 @@ sum(pVal &lt; 0.05)</code></pre>
 <pre class="r"><code>sum(p.adjust(pVal,method = &quot;BH&quot;) &lt; 0.05)</code></pre>
 <pre><code>## [1] 0</code></pre>
 <ul>
-<li>All multiple test failes to produce p-values less than <span class="math inline">\(0.5\)</span>,</li>
-<li>Hence, test fails to reject H2 comprehencively.</li>
+<li>All multiple test failed to produce p-values less than <span class="math inline">\(0.5\)</span>,</li>
+<li>Hence, test fails to reject H2 comprehensively.</li>
 </ul>
 </div>
 </div>
@@ -512,6 +512,7 @@ testojd20vsvcd20 = t.test(ojd20,vcd20,paired = F, var.equal = F)</code></pre>
 <li>Data is derived from samples representative of the population.</li>
 <li>Variances are considered to be unequal.</li>
 <li>Confidence interval of <span class="math inline">\(95\)</span>% is used for hypothesis test.</li>
+<li>p-adjustment method “BH” is used considering data does not have dependence.</li>
 </ol>
 </div>
 

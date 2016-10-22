@@ -192,9 +192,9 @@ testojvsvc
 
 #### Additional Hypothesis Testing using Multiple Test rule
 
-In previous testing, we have found that H2 (OJ supplement have impact on teeth growth compare to VC supplement) is failing with very small p-values. To confirm the same, new approch of multiple testing is used here. 
+In previous testing, we have found that H2 (OJ supplement have impact on teeth growth compare to VC supplement) is failing with very small p-values. To confirm the same, new approach of multiple testing is used here. 
 
-OJ and VC dataset have $30$ samples each. In multiple testing,procedure will choose $21$ samples ($70$%) randomly and perform the test. Randomized trials are repeated for 20 times. On generated p-values then "BH" correction is applied to determine the hypothesis.
+OJ and VC data set have $30$ samples each. In multiple testing,procedure will choose $21$ samples ($70$%) randomly and perform the test. Randomized trials are repeated for 20 times. On generated p-values then "BH" correction is applied to determine the hypothesis.
 
 ```{r, echo=TRUE, message=FALSE, warning=FALSE}
 repeatTrial = 20 # No. Of repeated trials
@@ -211,8 +211,8 @@ sum(pVal < 0.05)
 sum(p.adjust(pVal,method = "BH") < 0.05)
 ```
 
-- All multiple test failes to produce p-values less than $0.5$, 
-- Hence, test fails to reject H2 comprehencively.
+- All multiple test failed to produce p-values less than $0.5$, 
+- Hence, test fails to reject H2 comprehensively.
 
 ### H3 : Dose wise, OJ supplement have impact on teeth growth
 
@@ -304,3 +304,4 @@ Increase in dose leads to increase in growth of teeth irrespective of supplement
 5. Data is derived from samples representative of the population. 
 6. Variances are considered to be unequal.
 7. Confidence interval of $95$% is used for hypothesis test.
+8. p-adjustment method "BH" is used considering data does not have dependence.
