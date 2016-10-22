@@ -311,6 +311,42 @@ testojvsvc
 - The confidence interval are inclusive of $0$ and p-values is higher than $0.05$.
 - Hence test failed to reject null hypothesis i.e. OJ supplement does not have positive impact on teeth growth in comparison of VC supplement.
 
+#### Additional Hypothesis Testing using Multiple Test rule
+
+In previous testing, we have found that H2 (OJ supplement have impact on teeth growth compare to VC supplement) is failing with very small p-values. To confirm the same, new approch of multiple testing is used here. 
+
+OJ and VC dataset have $30$ samples each. In multiple testing,procedure will choose $21$ samples ($70$%) randomly and perform the test. Randomized trials are repeated for 20 times. On generated p-values then "BH" correction is applied to determine the hypothesis.
+
+
+```r
+repeatTrial = 20 # No. Of repeated trials
+pVal=NULL # to store p-value of each trial
+ssize = 21 # 70% of 30
+for (i in 1:repeatTrial){
+        ojs = sample(oj$len ,ssize)
+        vcs = sample(vc$len ,ssize)
+        ttest = t.test(ojs,vcs,paired = F, var.equal = F)
+        pVal = c(pVal,ttest$p.value)
+}
+
+sum(pVal < 0.05)
+```
+
+```
+## [1] 4
+```
+
+```r
+sum(p.adjust(pVal,method = "BH") < 0.05)
+```
+
+```
+## [1] 0
+```
+
+- All multiple test failes to produce p-values less than $0.5$, 
+- Hence, test fails to reject H2 comprehencively.
+
 ### H3 : Dose wise, OJ supplement have impact on teeth growth
 
 #### Dataset preparation
@@ -414,17 +450,19 @@ testojd20vsvcd20 = t.test(ojd20,vcd20,paired = F, var.equal = F)
      - p-value for $2.0$ over $1.0$ =  $1.9064295\times 10^{-5}$
      - All p-values are less than $0.05$ & hence strong influence
 
-- From H2 : OJ supplement **does not have stronger impact** on teeth growth as p-value $0.0606345$ is which is higher than $0.05$.
+- From H2 : OJ supplement **does not have stronger impact** on teeth growth as p-value $0.0606345$ is which is higher than $0.05$. Multiple test procedure fails in same context and leads to same conclusion.
 
 - From H3 : Does wise, OJ supplement **have strong impact** on teeth growth for dose size $0.5$ and $1.0$. For dose $2.0$, OJ supplement **does not have impact** on teeth growth.
      - p-values for $0.5$ dose for OJ over VC = $0.0063586$
      - p-values for $1.0$ dose for OJ over VC = $0.0010384$
      - p-values for $2.0$ dose for OJ over VC = $0.9638516$
      - For dose $0.5$ and $1.0$ p-values are lower than $0.05$ and hence strong positive influence
-     - For dose $3.0$ p-value is much more higher than $0.05$and hence no impact.
+     - For dose $2.0$ p-value is much more higher than $0.05$and hence no impact.
 
 ## Conclusion
 Increase in dose leads to increase in growth of teeth irrespective of supplement method. OJ supplement method is not really superior over all dose ranges. However, for small dose ranges up to $1.0$, OJ supplement is highly superior over VC supplement. 
+
+
 
 ## Assumptions
 1. A higher value of “len” indicates a higher impact.

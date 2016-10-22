@@ -100,3 +100,16 @@ testojd10vsvcd10
 testojd20vsvcd20 = t.test(ojd20,vcd20,paired = F, var.equal = F)
 testojd20vsvcd20
 # Reject it
+
+# 4
+repeatTrial = 20
+pVal=NULL
+ssize = 21 # 70% of 30
+for (i in 1:repeatTrial){
+        ojs = sample(oj$len ,ssize)
+        vcs = sample(vc$len ,ssize)
+        ttest = t.test(ojs,vcs,paired = F, var.equal = F)
+        pVal = c(pVal,ttest$p.value)
+}
+sum(pVal < 0.05)
+sum(p.adjust(pVal,method = "BH") < 0.05)

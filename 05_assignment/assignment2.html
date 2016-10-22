@@ -137,6 +137,7 @@ $(document).ready(function () {
 <li><a href="#h2-oj-supplement-have-impact-on-teeth-growth-compare-to-vc-supplement"><span class="toc-section-number">0.3.2</span> H2 : OJ supplement have impact on teeth growth compare to VC supplement</a><ul>
 <li><a href="#dataset-preparation-1"><span class="toc-section-number">0.3.2.1</span> Dataset preparation</a></li>
 <li><a href="#hypothesis-testing-1"><span class="toc-section-number">0.3.2.2</span> Hypothesis testing</a></li>
+<li><a href="#additional-hypothesis-testing-using-multiple-test-rule"><span class="toc-section-number">0.3.2.3</span> Additional Hypothesis Testing using Multiple Test rule</a></li>
 </ul></li>
 <li><a href="#h3-dose-wise-oj-supplement-have-impact-on-teeth-growth"><span class="toc-section-number">0.3.3</span> H3 : Dose wise, OJ supplement have impact on teeth growth</a><ul>
 <li><a href="#dataset-preparation-2"><span class="toc-section-number">0.3.3.1</span> Dataset preparation</a></li>
@@ -369,6 +370,29 @@ testojvsvc</code></pre>
 <li>Hence test failed to reject null hypothesis i.e. OJ supplement does not have positive impact on teeth growth in comparison of VC supplement.</li>
 </ul>
 </div>
+<div id="additional-hypothesis-testing-using-multiple-test-rule" class="section level4">
+<h4><span class="header-section-number">0.3.2.3</span> Additional Hypothesis Testing using Multiple Test rule</h4>
+<p>In previous testing, we have found that H2 (OJ supplement have impact on teeth growth compare to VC supplement) is failing with very small p-values. To confirm the same, new approch of multiple testing is used here.</p>
+<p>OJ and VC dataset have <span class="math inline">\(30\)</span> samples each. In multiple testing,procedure will choose <span class="math inline">\(21\)</span> samples (<span class="math inline">\(70\)</span>%) randomly and perform the test. Randomized trials are repeated for 20 times. On generated p-values then “BH” correction is applied to determine the hypothesis.</p>
+<pre class="r"><code>repeatTrial = 20 # No. Of repeated trials
+pVal=NULL # to store p-value of each trial
+ssize = 21 # 70% of 30
+for (i in 1:repeatTrial){
+        ojs = sample(oj$len ,ssize)
+        vcs = sample(vc$len ,ssize)
+        ttest = t.test(ojs,vcs,paired = F, var.equal = F)
+        pVal = c(pVal,ttest$p.value)
+}
+
+sum(pVal &lt; 0.05)</code></pre>
+<pre><code>## [1] 4</code></pre>
+<pre class="r"><code>sum(p.adjust(pVal,method = &quot;BH&quot;) &lt; 0.05)</code></pre>
+<pre><code>## [1] 0</code></pre>
+<ul>
+<li>All multiple test failes to produce p-values less than <span class="math inline">\(0.5\)</span>,</li>
+<li>Hence, test fails to reject H2 comprehencively.</li>
+</ul>
+</div>
 </div>
 <div id="h3-dose-wise-oj-supplement-have-impact-on-teeth-growth" class="section level3">
 <h3><span class="header-section-number">0.3.3</span> H3 : Dose wise, OJ supplement have impact on teeth growth</h3>
@@ -462,14 +486,14 @@ testojd20vsvcd20 = t.test(ojd20,vcd20,paired = F, var.equal = F)</code></pre>
 <li>p-value for <span class="math inline">\(2.0\)</span> over <span class="math inline">\(1.0\)</span> = <span class="math inline">\(1.9064295\times 10^{-5}\)</span></li>
 <li>All p-values are less than <span class="math inline">\(0.05\)</span> &amp; hence strong influence</li>
 </ul></li>
-<li><p>From H2 : OJ supplement <strong>does not have stronger impact</strong> on teeth growth as p-value <span class="math inline">\(0.0606345\)</span> is which is higher than <span class="math inline">\(0.05\)</span>.</p></li>
+<li><p>From H2 : OJ supplement <strong>does not have stronger impact</strong> on teeth growth as p-value <span class="math inline">\(0.0606345\)</span> is which is higher than <span class="math inline">\(0.05\)</span>. Multiple test procedure fails in same context and leads to same conclusion.</p></li>
 <li>From H3 : Does wise, OJ supplement <strong>have strong impact</strong> on teeth growth for dose size <span class="math inline">\(0.5\)</span> and <span class="math inline">\(1.0\)</span>. For dose <span class="math inline">\(2.0\)</span>, OJ supplement <strong>does not have impact</strong> on teeth growth.
 <ul>
 <li>p-values for <span class="math inline">\(0.5\)</span> dose for OJ over VC = <span class="math inline">\(0.0063586\)</span></li>
 <li>p-values for <span class="math inline">\(1.0\)</span> dose for OJ over VC = <span class="math inline">\(0.0010384\)</span></li>
 <li>p-values for <span class="math inline">\(2.0\)</span> dose for OJ over VC = <span class="math inline">\(0.9638516\)</span></li>
 <li>For dose <span class="math inline">\(0.5\)</span> and <span class="math inline">\(1.0\)</span> p-values are lower than <span class="math inline">\(0.05\)</span> and hence strong positive influence</li>
-<li>For dose <span class="math inline">\(3.0\)</span> p-value is much more higher than <span class="math inline">\(0.05\)</span>and hence no impact.</li>
+<li>For dose <span class="math inline">\(2.0\)</span> p-value is much more higher than <span class="math inline">\(0.05\)</span>and hence no impact.</li>
 </ul></li>
 </ul>
 </div>
